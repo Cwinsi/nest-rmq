@@ -1,4 +1,4 @@
-import { ModuleMetadata, Type } from "@nestjs/common";
+import { ModuleMetadata } from "@nestjs/common";
 import { NestRmqOptions } from "./nest-rmq-options.interface";
 
 export interface NestRmqOptionsFactory {
@@ -6,8 +6,6 @@ export interface NestRmqOptionsFactory {
 }
 
 export interface NestRmqAsyncOptions extends Pick<ModuleMetadata, "imports"> {
-  useExisting?: Type<NestRmqOptionsFactory>;
-  useClass?: Type<NestRmqOptionsFactory>;
-  useFactory?: (...args: any[]) => Promise<NestRmqOptions> | NestRmqOptions;
+  useFactory: (...args: any[]) => Promise<NestRmqOptions> | NestRmqOptions;
   inject?: any[];
 }

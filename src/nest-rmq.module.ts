@@ -9,10 +9,7 @@ import { ConfigsModule } from "./configs/configs.module";
 import { HandlerExplorerModule } from "./handler-explorer/handler-explorer.module";
 import { HandlersModule } from "./handlers/handlers.module";
 import { ProducersModule } from "./producers/producers.module";
-import {
-  NestRmqAsyncOptions,
-  NestRmqOptionsFactory,
-} from "./configs/interfaces/nest-rmq-async-options.interface";
+import { NestRmqAsyncOptions } from "./configs/interfaces/nest-rmq-async-options.interface";
 
 export const nestRmqOptions = Symbol("nestRmqOptions");
 
@@ -35,61 +32,20 @@ export class NestRmqModule {
   }
 
   static forRootAsync(options: NestRmqAsyncOptions): DynamicModule {
-    const asyncProviders = this.createAsyncProviders(options);
-
     return {
       module: NestRmqModule,
       global: true,
-      imports: options.imports ?? [],
-      providers: [
-        ...asyncProviders,
-        {
-          provide: "CONFIGS_MODULE",
-          useFactory: async (opts: NestRmqOptions) =>
-            ConfigsModule.forRoot(opts),
-          inject: [nestRmqOptions],
-        },
+      imports: [
+        ...(options.imports ?? []),
+        ConfigsModule.forRootAsync(options),
+        AmqpModule,
+        HandlerExplorerModule,
+        HandlersModule,
+        ProducersModule,
       ],
+      providers: [],
       exports: [ProducersModule],
     };
-  }
-
-  private static createAsyncProviders(
-    options: NestRmqAsyncOptions,
-  ): Provider[] {
-    if (options.useFactory) {
-      return [
-        {
-          provide: nestRmqOptions,
-          useFactory: options.useFactory,
-          inject: options.inject || [],
-        },
-      ];
-    }
-
-    if (!options.useClass || !options.useExisting) {
-      throw new Error("Must provide useClass or useExisting");
-    }
-
-    const useClass = options.useClass || options.useExisting;
-
-    const providers: Provider[] = [
-      {
-        provide: nestRmqOptions,
-        useFactory: async (factory: NestRmqOptionsFactory) =>
-          await factory.createRmqOptions(),
-        inject: [useClass!],
-      },
-    ];
-
-    if (options.useClass) {
-      providers.push({
-        provide: useClass,
-        useClass,
-      });
-    }
-
-    return providers;
   }
 
   static forFeature(events: AnyEventClass[]): DynamicModule {
