@@ -1,0 +1,12 @@
+import { RequiredNestRMQOptions } from "../types/required-options.type";
+import { defaultHandlerOptions } from "./default-handler-options.value";
+import { HandlerClassMethodQueueNameStrategy } from "../../handlers/handler-event-queue-name-strategies/handler-class-method.queue-name-strategy";
+import { SingleExchangeStrategy } from "../../events/events-exchange-strategies/single.exchange-strategy";
+
+export const defaultNestRmqOptions: RequiredNestRMQOptions = {
+  defaultHandlerOptions,
+  connectionOption: {},
+
+  handlerEventQueueNameStrategy: new HandlerClassMethodQueueNameStrategy(),
+  eventsExchangeStrategy: new SingleExchangeStrategy(),
+};

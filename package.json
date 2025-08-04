@@ -1,0 +1,63 @@
+{
+  "name": "@cwinsi/nest-rmq",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "dev": "ts-node src/index.ts",
+    "prepare": "npm run build",
+    "test": "jest ",
+    "test:watch": "jest --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "rebbitmq",
+    "nestjs",
+    "nest",
+    "amqp",
+    "amqplib"
+  ],
+  "author": "grigortsevandrei@gmail.com",
+  "license": "MIT",
+  "description": "",
+  "peerDependencies": {
+    "@nestjs/common": ">=9.0.0",
+    "@nestjs/core": ">=9.0.0",
+    "reflect-metadata": ">=0.1.13"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "@faker-js/faker": "^9.9.0",
+    "@nestjs/common": "^11.1.5",
+    "@nestjs/core": "^11.1.5",
+    "@nestjs/testing": "^11.1.5",
+    "@types/amqplib": "^0.10.7",
+    "@types/jest": "^30.0.0",
+    "@types/lodash": "^4.17.20",
+    "@types/node": "^24.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.3",
+    "eslint-plugin-unicorn": "^60.0.0",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "globals": "^16.3.0",
+    "jest": "^30.0.5",
+    "jest-extended": "^6.0.0",
+    "jiti": "^2.5.1",
+    "reflect-metadata": "^0.2.2",
+    "rimraf": "^6.0.1",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "5.8.3",
+    "typescript-eslint": "^8.38.0"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.8",
+    "lodash": "^4.17.21"
+  }
+}
