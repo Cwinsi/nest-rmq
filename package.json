@@ -20,6 +20,7 @@
     "amqp",
     "amqplib"
   ],
+  "repository": "https://github.com/Cwinsi/nest-rmq",
   "author": "grigortsevandrei@gmail.com",
   "license": "MIT",
   "description": "",
