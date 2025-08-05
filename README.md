@@ -145,3 +145,31 @@ class UserEmailNotificationService {
   }
 }
 ```
+
+### 🏭 Exchange control
+Default exchange strategy create one exchange **nest-rmq**. You can use different one from lib or create own.
+
+| Strategy                   | Description                     | Notes    |
+|----------------------------|---------------------------------|----------|
+| **SingleExchangeStrategy**     | Create one exchange for all app | default |
+| **EveryEventExchangeStrategy** | Create exchange for each event  |          |
+
+If you need own exchange topology, create implementation ofEventsExchangeStrategy interface.
+Use one of existed or own strategy in module config
+Static Configuration
+```ts
+import { Module } from '@nestjs/common'
+import { NestRmqModule } from '@cwinsi/nest-rmq'
+
+@Module({
+  imports: [
+    NestRmqModule.forFeature({
+      connectionOption: {
+        // 🔑 your configs
+      },
+      eventsExchangeStrategy: new EveryEventExchangeStrategy()
+    }),
+  ],
+})
+export class AppModule {}
+```

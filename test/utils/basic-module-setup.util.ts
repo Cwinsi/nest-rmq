@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import { NestRmqModule } from "../../src";
+import {EveryEventExchangeStrategy, NestRmqModule} from "../../src";
 import { Provider } from "@nestjs/common";
 
 export const getBasicModule = async (...handlers: Provider[]) => {
