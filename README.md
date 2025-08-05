@@ -14,7 +14,8 @@ Supports declarative event producers and consumers, simple modular design.
 - ✅ Automatic queue declaration and binding
 
 
-## 📦 Installation
+## 🚧 Basic Usage:
+### 📦 Installation
 
 ```bash
 npm install @cwinsi/nest-rmq
@@ -23,7 +24,7 @@ yarn add @cwinsi/nest-rmq
 ```
 
 
-## 🚀 Getting Started
+### 🚀 Getting Started
 
 Static Configuration
 ```ts
@@ -66,7 +67,7 @@ import { NestRmqModule } from '@cwinsi/nest-rmq'
 export class AppModule {}
 ```
 
-## 🧨 Declaring Events
+### 🧨 Declaring Events
 Create class to declare event, use @Event decorator to mark your class as event.<br>
 Event has name argument, the name affects to exchange and queues names. You have to give uniq name to your events.
 
@@ -87,7 +88,7 @@ Registration required to create producer providers
 export class UserModule {}
 ```
 
-## 📤 Producing Events
+### 📤 Producing Events
 You can inject producers in your providers using **@InjectEventProducer** decorator
 ```ts
 @Injectable()
@@ -104,7 +105,7 @@ export class UserService {
 }
 ```
 
-## 🍫 Processing events
+### 📧 Processing events
 Use **@InjectEventProducer** on method to process events
 ```ts
 @Injectable()
@@ -119,5 +120,28 @@ class UserEmailNotificationService {
 🔥 ENJOY
 
 ## 🚧 Planned:
-- Check event name duplicates on app stratup
-- Manual **ack**/**nack** controll
+- Check event name duplicates on app startup
+- Logging
+- Different serialisation formats
+
+
+## ⚙️ Advanced topics
+### 🚨 Processing events
+If necessary, EventDeliveryContext is provided to manage **ack**/**nack** execution, use @EventDelivery decorator in handler arguments.
+> [!WARNING]  
+> When you use @EventDelivery in handler **ack**/**nack** will not call after handler resolve. You HAVE TO call one of them manually
+
+Let's use delivery context on UserEmailNotificationService:
+```ts
+@Injectable()
+class UserEmailNotificationService {
+  @EventHandler(UserCreatedEvent)
+  async handle(
+    event: UserCreatedEvent,
+    @EventDelivery() eventDelivery: EventDeliveryContext
+  ): Promise<void> {
+    console.log(`Sending welcome email to user ${event.userId}`)
+    eventDelivery.ack()
+  }
+}
+```

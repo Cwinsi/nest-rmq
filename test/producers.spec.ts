@@ -1,16 +1,10 @@
-import 'jest-extended';
+import "jest-extended";
 import { Event } from "../src/events/decorators/event.decorator";
-import { EventHandler } from "../src/handlers/decorators/event-handler.decorator";
 import { Test, TestingModule } from "@nestjs/testing";
-import { Injectable } from "@nestjs/common";
-import { NestRmqModule } from "../src/nest-rmq.module";
-import { Options } from "amqplib/properties";
-import { faker } from "@faker-js/faker";
+import { NestRmqModule } from "../src";
 import amqplib from "amqplib";
-import { HandlerEventQueueNameStrategy } from "../src/handlers/interfaces/handler-event-queue-name-strategy.interface";
-import { EventsExchangeStrategy } from "../src/events/interfaces/events-exchange-strategy.interface";
-import {EventProducer} from "../src/producers/event-producer";
-import {getEventProducerToken} from "../src/producers/injection/get-event-producer-token";
+import { EventProducer } from "../src/producers/event-producer";
+import { getEventProducerToken } from "../src/producers/injection/get-event-producer-token";
 
 jest.mock("amqplib", () => ({
   connect: jest.fn(),
@@ -18,10 +12,8 @@ jest.mock("amqplib", () => ({
 
 @Event("test")
 class TestEvent {
-  constructor(private readonly eventField: string) {
-  }
+  constructor(private readonly eventField: string) {}
 }
-
 
 describe("Producers", () => {
   let moduleRef: TestingModule;
@@ -45,13 +37,13 @@ describe("Producers", () => {
     moduleRef = await Test.createTestingModule({
       imports: [
         NestRmqModule.forRoot({
-          connectionOption: {}
+          connectionOption: {},
         }),
-        NestRmqModule.forFeature([TestEvent])
+        NestRmqModule.forFeature([TestEvent]),
       ],
     }).compile();
 
-    producerRef =  moduleRef.get(getEventProducerToken(TestEvent));
+    producerRef = moduleRef.get(getEventProducerToken(TestEvent));
   });
 
   it("should be defined", () => {
@@ -59,17 +51,16 @@ describe("Producers", () => {
     expect(producerRef).toBeDefined();
   });
 
-
   it("should call chanel publish on publish event", async () => {
-    await producerRef.publish(new TestEvent('test'))
-    expect(mockChannel.publish).toHaveBeenCalledTimes(1)
+    await producerRef.publish(new TestEvent("test"));
+    expect(mockChannel.publish).toHaveBeenCalledTimes(1);
   });
 
-
   it("should call chanel publish with json data", async () => {
-    await producerRef.publish(new TestEvent('test2'))
+    await producerRef.publish(new TestEvent("test2"));
 
-    const [exchange, routingKey, contentBuffer] = mockChannel.publish.mock.calls[0];
+    const [exchange, routingKey, contentBuffer] =
+      mockChannel.publish.mock.calls[0];
 
     const jsonString = contentBuffer.toString();
     const parsed = JSON.parse(jsonString);

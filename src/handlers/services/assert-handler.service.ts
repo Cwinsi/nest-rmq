@@ -3,6 +3,8 @@ import { Injectable, OnApplicationBootstrap } from "@nestjs/common";
 import { HandlerExplorerMethodInterface } from "../../handler-explorer/interfaces/handler-explorer-method.interface";
 import { ConfigsService } from "../../configs/configs.service";
 import { HandlerExplorerService } from "../../handler-explorer/services/handler-explorer.service";
+import { getEventHandlerDeliveryIndexesMetadata } from "../decorators/event-handler-delivery.decorator";
+import { EventDeliveryContext } from "../context/event-delivery.context";
 
 @Injectable()
 export class AssertHandlerService implements OnApplicationBootstrap {
@@ -58,14 +60,50 @@ export class AssertHandlerService implements OnApplicationBootstrap {
       handler.eventMetadata.name,
     );
 
+    const eventDeliveryArgumentIndexes = getEventHandlerDeliveryIndexesMetadata(
+      handler.handlerMetadata.handlerClass,
+      handler.handlerMetadata.methodName,
+    );
+
+    // TODO: refactor
+    if (eventDeliveryArgumentIndexes.length > 1) {
+      throw new Error(
+        `Only one @EventDelivery decorator allowed to apply for one handler`,
+      );
+    }
+
+    const automaticDeliveryControl = eventDeliveryArgumentIndexes.length === 0;
+
     await channel.consume(handlerQueueName, async (message) => {
       if (!message) {
         return;
       }
 
       const eventData = JSON.parse(message.content.toString());
-      await handler.method(eventData);
-      channel.ack(message);
+
+      const handlerDeliveryContext = new EventDeliveryContext(message, channel);
+
+      // TODO: move to dedicated services
+      if (automaticDeliveryControl) {
+        try {
+          await handler.method(eventData);
+          handlerDeliveryContext.ack();
+        } catch (_) {
+          // TODO: add logs
+          handlerDeliveryContext.nack();
+        }
+      } else {
+        const handlerArgs: any[] = [eventData];
+
+        for (const eventDeliveryArgumentIndex of eventDeliveryArgumentIndexes) {
+          handlerArgs[eventDeliveryArgumentIndex] = handlerDeliveryContext;
+        }
+
+        await handler.method.apply(
+          handler.handlerMetadata.handlerClass,
+          handlerArgs,
+        );
+      }
     });
   }
 }

@@ -1,14 +1,10 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { ConfigsService } from "../src/configs/configs.service";
 import { NestRmqModule } from "../src/nest-rmq.module";
-import { ConfigsModule } from "../src/configs/configs.module";
-import { NestRmqOptions } from "../src/configs/interfaces/nest-rmq-options.interface";
-import { faker } from "@faker-js/faker";
-import { defaultHandlerOptions } from "../src/configs/values/default-handler-options.value";
-import {getEventProducerToken} from "../src/producers/injection/get-event-producer-token";
-import {Event} from "../src";
+import { getEventProducerToken } from "../src/producers/injection/get-event-producer-token";
+import { Event } from "../src";
 import amqplib from "amqplib";
-import {Injectable, Module} from "@nestjs/common";
+import { Injectable, Module } from "@nestjs/common";
 
 jest.mock("amqplib", () => ({
   connect: jest.fn(),
@@ -16,19 +12,17 @@ jest.mock("amqplib", () => ({
 
 @Event("test")
 class TestEvent {
-  constructor(private readonly eventField: string) {
-  }
+  constructor(private readonly eventField: string) {}
 }
 
 @Injectable()
 class FactoryConfigProvider {
-  public port: number = 333
+  public port: number = 333;
 }
-
 
 @Module({
   providers: [FactoryConfigProvider],
-  exports: [FactoryConfigProvider]
+  exports: [FactoryConfigProvider],
 })
 class FactoryConfigModule {}
 
@@ -48,7 +42,6 @@ describe("AsyncRootModule", () => {
     createChannel: jest.fn().mockResolvedValue(mockChannel),
   };
 
-
   beforeAll(async () => {
     (amqplib.connect as jest.Mock).mockResolvedValue(mockConnection);
 
@@ -59,18 +52,16 @@ describe("AsyncRootModule", () => {
           useFactory: async (config: FactoryConfigProvider) => {
             return {
               connectionOption: {
-                port: config.port
-              }
-            }
+                port: config.port,
+              },
+            };
           },
           imports: [FactoryConfigModule],
-          inject: [FactoryConfigProvider]
+          inject: [FactoryConfigProvider],
         }),
-        NestRmqModule.forFeature([TestEvent])
+        NestRmqModule.forFeature([TestEvent]),
       ],
-      providers: [
-        FactoryConfigProvider
-      ]
+      providers: [FactoryConfigProvider],
     }).compile();
   });
 
@@ -87,7 +78,7 @@ describe("AsyncRootModule", () => {
     const configsService = moduleRef.get(ConfigsService);
     expect(configsService).toBeDefined();
 
-    const configs = configsService.getConfigs()
-    expect(configs.connectionOption.port).toEqual(333)
+    const configs = configsService.getConfigs();
+    expect(configs.connectionOption.port).toEqual(333);
   });
 });

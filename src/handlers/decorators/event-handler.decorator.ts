@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { HandlerMetadata } from "../interfaces/handler-metadata.interface";
 import { HandlerOptions } from "../interfaces/handler-options.interface";
 import { EventClass } from "../../events/types/event-class.type";
+import { EventDeliveryContext } from "../context/event-delivery.context";
 
 const eventHandlerMetadataSymbol = Symbol("eventHandlerMetadata");
 
@@ -12,7 +13,9 @@ export const EventHandler = <Event>(
   return (
     target: Object,
     propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<(event: Event) => any>,
+    descriptor: TypedPropertyDescriptor<
+      (event: Event, ...args: EventDeliveryContext[]) => any
+    >,
   ) => {
     if (!descriptor.value) {
       throw new Error(
@@ -22,6 +25,7 @@ export const EventHandler = <Event>(
 
     const handlerMetadata: HandlerMetadata = {
       eventClass,
+      handlerClass: target,
       methodName: String(propertyKey),
       className: target.constructor.name,
       options,

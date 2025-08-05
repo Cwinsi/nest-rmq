@@ -1,14 +1,16 @@
-import 'jest-extended';
+import "jest-extended";
 import { Event } from "../src/events/decorators/event.decorator";
 import { EventHandler } from "../src/handlers/decorators/event-handler.decorator";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Injectable } from "@nestjs/common";
 import { NestRmqModule } from "../src/nest-rmq.module";
-import { Options } from "amqplib/properties";
 import { faker } from "@faker-js/faker";
 import amqplib from "amqplib";
 import { HandlerEventQueueNameStrategy } from "../src/handlers/interfaces/handler-event-queue-name-strategy.interface";
 import { EventsExchangeStrategy } from "../src/events/interfaces/events-exchange-strategy.interface";
+import { NestRmqConnectionOptions } from "../src/configs/interfaces/nest-rmq-connection-options.interface";
+import { EventDelivery } from "../src/handlers/decorators/event-handler-delivery.decorator";
+import { EventDeliveryContext } from "../src/handlers/context/event-delivery.context";
 
 jest.mock("amqplib", () => ({
   connect: jest.fn(),
@@ -23,7 +25,7 @@ class TestEvent2 {}
 @Injectable()
 class TestHandler {
   @EventHandler(TestEvent)
-  handleEvent(_event: TestEvent) {}
+  handleEvent(_event: TestEvent, @EventDelivery() a: EventDeliveryContext) {}
 
   @EventHandler(TestEvent2)
   handleEvent2(_event: TestEvent2) {}
@@ -54,7 +56,7 @@ describe("AssertHandlers", () => {
     createChannel: jest.fn().mockResolvedValue(mockChannel),
   };
 
-  const connectionOption: Options.Connect = {
+  const connectionOption: NestRmqConnectionOptions = {
     hostname: faker.internet.ipv4(),
     username: faker.internet.username(),
     password: faker.internet.password(),
@@ -75,12 +77,12 @@ describe("AssertHandlers", () => {
     }).compile();
 
     await moduleRef.init();
-
   });
 
   it("should create and bind queue for all handlers", () => {
     expect(mockChannel.bindQueue).toHaveBeenCalledTimes(3);
     expect(mockChannel.assertQueue).toHaveBeenCalledTimes(3);
+    expect(mockChannel.consume).toHaveBeenCalledTimes(3);
   });
 
   it("should use name strategy for all handlers", () => {
@@ -88,5 +90,4 @@ describe("AssertHandlers", () => {
       3,
     );
   });
-
 });
