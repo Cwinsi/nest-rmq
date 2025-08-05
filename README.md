@@ -3,6 +3,11 @@
 A lightweight and modular RabbitMQ integration for NestJS.  
 Supports declarative event producers and consumers, simple modular design.
 
+
+> [!WARNING]  
+> The lib is under active development, not recommended for use in production until<br>
+> a stable version is released. The API may change and be supplemented.
+
 ## ✨ Features
 
 - 🔌 Plug-and-play RabbitMQ support for NestJS
