@@ -1,4 +1,7 @@
 # @cwinsi/nest-rmq
+![npm](https://img.shields.io/npm/v/@cwinsi/nest-rmq)
+![npm](https://img.shields.io/npm/dm/@cwinsi/nest-rmq)
+![License](https://img.shields.io/npm/l/@cwinsi/nest-rmq)
 
 A lightweight and modular RabbitMQ integration for NestJS.  
 Supports declarative event producers and consumers, simple modular design.
@@ -154,7 +157,7 @@ Default exchange strategy create one exchange **nest-rmq**. You can use differen
 | **SingleExchangeStrategy**     | Create one exchange for all app | default |
 | **EveryEventExchangeStrategy** | Create exchange for each event  |          |
 
-If you need own exchange topology, create implementation ofEventsExchangeStrategy interface.
+If you need own exchange topology, create implementation of **EventsExchangeStrategy** interface.
 Use one of existed or own strategy in module config
 Static Configuration
 ```ts
