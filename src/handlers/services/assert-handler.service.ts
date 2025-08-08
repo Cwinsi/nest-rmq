@@ -5,6 +5,8 @@ import { ConfigsService } from "../../configs/configs.service";
 import { HandlerExplorerService } from "../../handler-explorer/services/handler-explorer.service";
 import { getEventHandlerDeliveryIndexesMetadata } from "../decorators/event-handler-delivery.decorator";
 import { EventDeliveryContext } from "../context/event-delivery.context";
+import { getEventHandlerPropertiesIndexesMetadata } from "../decorators/event-handler-properties.decorator";
+import { plainObjectToInstanceUtil } from "../../utils/plain-object-to-instance.util";
 
 @Injectable()
 export class AssertHandlerService implements OnApplicationBootstrap {
@@ -72,6 +74,12 @@ export class AssertHandlerService implements OnApplicationBootstrap {
       );
     }
 
+    const eventPropertiesArgumentIndexes =
+      getEventHandlerPropertiesIndexesMetadata(
+        handler.handlerMetadata.handlerClass,
+        handler.handlerMetadata.methodName,
+      );
+
     const automaticDeliveryControl = eventDeliveryArgumentIndexes.length === 0;
 
     await channel.consume(handlerQueueName, async (message) => {
@@ -80,21 +88,32 @@ export class AssertHandlerService implements OnApplicationBootstrap {
       }
 
       const eventData = JSON.parse(message.content.toString());
+      const event = plainObjectToInstanceUtil(
+        handler.handlerMetadata.eventClass,
+        eventData,
+      );
+      const handlerArgs: any[] = [event];
+
+      for (const eventPropertiesArgumentIndex of eventPropertiesArgumentIndexes) {
+        handlerArgs[eventPropertiesArgumentIndex] = message.properties;
+      }
 
       const handlerDeliveryContext = new EventDeliveryContext(message, channel);
 
       // TODO: move to dedicated services
       if (automaticDeliveryControl) {
         try {
-          await handler.method(eventData);
+          await handler.method.apply(
+            handler.handlerMetadata.handlerClass,
+            handlerArgs,
+          );
+
           handlerDeliveryContext.ack();
         } catch (_) {
           // TODO: add logs
           handlerDeliveryContext.nack();
         }
       } else {
-        const handlerArgs: any[] = [eventData];
-
         for (const eventDeliveryArgumentIndex of eventDeliveryArgumentIndexes) {
           handlerArgs[eventDeliveryArgumentIndex] = handlerDeliveryContext;
         }
