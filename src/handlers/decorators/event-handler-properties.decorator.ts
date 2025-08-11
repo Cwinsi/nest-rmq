@@ -1,15 +1,28 @@
 import "reflect-metadata";
+import { EventPropertiesContext } from "../context/event-properties.context";
 
 const eventHandlerPropertiesMetadataSymbol = Symbol(
-  "eventHandlerPropertiesMetadataSymbol",
+  "eventHandlerPropertiesMetadata",
 );
 
-// TODO: add test cases
 export function EventProperties(): ParameterDecorator {
   return (target, propertyKey, parameterIndex) => {
     if (!propertyKey) {
       throw new Error(
         `@EventProperties decorator can only be applied be used on argument.`,
+      );
+    }
+
+    const parameterTypes = Reflect.getMetadata(
+      "design:paramtypes",
+      target,
+      propertyKey,
+    );
+    const paramType = parameterTypes?.[parameterIndex];
+
+    if (paramType !== EventPropertiesContext) {
+      throw new Error(
+        "@EventProperties can only be used on parameters of type EventPropertiesContext.",
       );
     }
 

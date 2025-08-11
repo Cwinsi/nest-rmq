@@ -176,3 +176,18 @@ import { NestRmqModule } from '@cwinsi/nest-rmq'
 })
 export class AppModule {}
 ```
+### 🚨 Message properties
+If you need access to rmq raw properties, use @EventProperties decorator in handler arguments.
+```ts
+@Injectable()
+class UserEmailNotificationService {
+  @EventHandler(UserCreatedEvent)
+  async handle(
+    event: UserCreatedEvent,
+    @EventProperties() eventPropertiesContext: EventPropertiesContext
+  ): Promise<void> {
+    console.log(`Sending welcome email to user ${event.userId}`)
+    console.log('Headers', eventPropertiesContext.headers)
+  }
+}
+```

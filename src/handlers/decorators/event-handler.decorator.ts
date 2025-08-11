@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { HandlerMetadata } from "../interfaces/handler-metadata.interface";
 import { HandlerOptions } from "../interfaces/handler-options.interface";
 import { EventClass } from "../../events/types/event-class.type";
-import { EventDeliveryContext } from "../context/event-delivery.context";
+import { HandlerAdditionalArgumentType } from "../types/handler-additional-argument.type";
 
 const eventHandlerMetadataSymbol = Symbol("eventHandlerMetadata");
 
@@ -14,7 +14,7 @@ export const EventHandler = <Event>(
     target: Object,
     propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<
-      (event: Event, ...args: EventDeliveryContext[]) => any
+      (event: Event, ...args: (HandlerAdditionalArgumentType | any)[]) => any
     >,
   ) => {
     if (!descriptor.value) {

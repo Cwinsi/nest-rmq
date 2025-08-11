@@ -3,10 +3,8 @@ import { Injectable, OnApplicationBootstrap } from "@nestjs/common";
 import { HandlerExplorerMethodInterface } from "../../handler-explorer/interfaces/handler-explorer-method.interface";
 import { ConfigsService } from "../../configs/configs.service";
 import { HandlerExplorerService } from "../../handler-explorer/services/handler-explorer.service";
-import { getEventHandlerDeliveryIndexesMetadata } from "../decorators/event-handler-delivery.decorator";
-import { EventDeliveryContext } from "../context/event-delivery.context";
-import { getEventHandlerPropertiesIndexesMetadata } from "../decorators/event-handler-properties.decorator";
-import { plainObjectToInstanceUtil } from "../../utils/plain-object-to-instance.util";
+import { HandlerAdditionalArgumentPipelineService } from "../handler-additional-arguments/services/handler-additional-argument-pipeline.service";
+import { HandlerConsumeDataBuilder } from "../builders/handler-consume-data.builder";
 
 @Injectable()
 export class AssertHandlerService implements OnApplicationBootstrap {
@@ -14,6 +12,7 @@ export class AssertHandlerService implements OnApplicationBootstrap {
     private readonly amqpConnectionService: AmqpConnectionService,
     private readonly handlerExplorerService: HandlerExplorerService,
     private readonly configsService: ConfigsService,
+    private readonly handlerAdditionalArgumentPipelineService: HandlerAdditionalArgumentPipelineService,
   ) {}
 
   async onApplicationBootstrap() {
@@ -62,65 +61,40 @@ export class AssertHandlerService implements OnApplicationBootstrap {
       handler.eventMetadata.name,
     );
 
-    const eventDeliveryArgumentIndexes = getEventHandlerDeliveryIndexesMetadata(
-      handler.handlerMetadata.handlerClass,
-      handler.handlerMetadata.methodName,
-    );
-
-    // TODO: refactor
-    if (eventDeliveryArgumentIndexes.length > 1) {
-      throw new Error(
-        `Only one @EventDelivery decorator allowed to apply for one handler`,
-      );
-    }
-
-    const eventPropertiesArgumentIndexes =
-      getEventHandlerPropertiesIndexesMetadata(
-        handler.handlerMetadata.handlerClass,
-        handler.handlerMetadata.methodName,
-      );
-
-    const automaticDeliveryControl = eventDeliveryArgumentIndexes.length === 0;
+    const pipeline =
+      this.handlerAdditionalArgumentPipelineService.getPipeline();
 
     await channel.consume(handlerQueueName, async (message) => {
       if (!message) {
         return;
       }
 
-      const eventData = JSON.parse(message.content.toString());
-      const event = plainObjectToInstanceUtil(
-        handler.handlerMetadata.eventClass,
-        eventData,
-      );
-      const handlerArgs: any[] = [event];
+      const handlerConsumeDataBuilder = HandlerConsumeDataBuilder.builder()
+        .withHandler(handler)
+        .withMessage(message)
+        .withChannel(channel)
+        .withEventJsonContentBuffer(message.content)
+        .withArgumentPipeline(pipeline);
 
-      for (const eventPropertiesArgumentIndex of eventPropertiesArgumentIndexes) {
-        handlerArgs[eventPropertiesArgumentIndex] = message.properties;
-      }
+      const handlerArguments = handlerConsumeDataBuilder.buildArguments();
+      const consumeData = handlerConsumeDataBuilder.build();
 
-      const handlerDeliveryContext = new EventDeliveryContext(message, channel);
-
-      // TODO: move to dedicated services
-      if (automaticDeliveryControl) {
+      if (consumeData.automaticProcessing) {
         try {
           await handler.method.apply(
             handler.handlerMetadata.handlerClass,
-            handlerArgs,
+            handlerArguments,
           );
 
-          handlerDeliveryContext.ack();
+          consumeData.handlerDeliveryContext.ack();
         } catch (_) {
           // TODO: add logs
-          handlerDeliveryContext.nack();
+          consumeData.handlerDeliveryContext.nack();
         }
       } else {
-        for (const eventDeliveryArgumentIndex of eventDeliveryArgumentIndexes) {
-          handlerArgs[eventDeliveryArgumentIndex] = handlerDeliveryContext;
-        }
-
         await handler.method.apply(
           handler.handlerMetadata.handlerClass,
-          handlerArgs,
+          handlerArguments,
         );
       }
     });
