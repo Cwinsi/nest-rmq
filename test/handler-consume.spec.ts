@@ -55,4 +55,40 @@ describe("HandlerConsume", () => {
     expect(receivedEvent).toBeInstanceOf(TestEvent);
   });
 
+  it("consumer should have access to correct this", async () => {
+    const eventHandlerLogicMock = jest.fn();
+
+    @Event("test")
+    class TestEvent {
+      constructor(private readonly userName: string) {}
+    }
+
+    @Injectable()
+    class TestHandler {
+      constructor() {
+        this.thisMethod = eventHandlerLogicMock
+      }
+
+      thisMethod: any
+
+      @EventHandler(TestEvent)
+      manualHandleEvent(
+        event: TestEvent,
+      ) {
+        this.thisMethod()
+      }
+    }
+
+    await getBasicModule(TestHandler);
+    const consumeCallback = mockChannel.consume.mock.calls[0][1];
+
+    const event = new TestEvent("Pedro");
+    const fakeMessage = {
+      content: Buffer.from(JSON.stringify(event)),
+    };
+    await consumeCallback(fakeMessage);
+
+    expect(eventHandlerLogicMock).toHaveBeenCalled()
+  });
+
 });

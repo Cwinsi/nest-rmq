@@ -6,4 +6,5 @@ export interface HandlerExplorerMethodInterface {
   handlerMetadata: HandlerMetadata;
 
   method: Function;
+  instance: Function;
 }

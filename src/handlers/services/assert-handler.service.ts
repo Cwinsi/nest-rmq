@@ -1,5 +1,5 @@
 import { AmqpConnectionService } from "../../amqp/services/amqp-connection.service";
-import { Injectable, OnApplicationBootstrap } from "@nestjs/common";
+import { Injectable, OnModuleInit } from "@nestjs/common";
 import { HandlerExplorerMethodInterface } from "../../handler-explorer/interfaces/handler-explorer-method.interface";
 import { ConfigsService } from "../../configs/configs.service";
 import { HandlerExplorerService } from "../../handler-explorer/services/handler-explorer.service";
@@ -7,7 +7,7 @@ import { HandlerAdditionalArgumentPipelineService } from "../handler-additional-
 import { HandlerConsumeDataBuilder } from "../builders/handler-consume-data.builder";
 
 @Injectable()
-export class AssertHandlerService implements OnApplicationBootstrap {
+export class AssertHandlerService implements OnModuleInit {
   constructor(
     private readonly amqpConnectionService: AmqpConnectionService,
     private readonly handlerExplorerService: HandlerExplorerService,
@@ -15,7 +15,7 @@ export class AssertHandlerService implements OnApplicationBootstrap {
     private readonly handlerAdditionalArgumentPipelineService: HandlerAdditionalArgumentPipelineService,
   ) {}
 
-  async onApplicationBootstrap() {
+  async onModuleInit() {
     await this.assertHandlers();
   }
 
@@ -81,10 +81,7 @@ export class AssertHandlerService implements OnApplicationBootstrap {
 
       if (consumeData.automaticProcessing) {
         try {
-          await handler.method.apply(
-            handler.handlerMetadata.handlerClass,
-            handlerArguments,
-          );
+          await handler.method.apply(handler.instance, handlerArguments);
 
           consumeData.handlerDeliveryContext.ack();
         } catch (_) {
@@ -92,10 +89,7 @@ export class AssertHandlerService implements OnApplicationBootstrap {
           consumeData.handlerDeliveryContext.nack();
         }
       } else {
-        await handler.method.apply(
-          handler.handlerMetadata.handlerClass,
-          handlerArguments,
-        );
+        await handler.method.apply(handler.instance, handlerArguments);
       }
     });
   }

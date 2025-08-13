@@ -48,6 +48,7 @@ export class HandlerExplorerService {
           method: methodRef,
           eventMetadata,
           handlerMetadata,
+          instance,
         });
       }
     }
