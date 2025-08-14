@@ -8,6 +8,7 @@ export const getMockChannelAndConnection = () => {
     ack: jest.fn(),
     nack: jest.fn(),
     assertExchange: jest.fn(),
+    publish: jest.fn(),
   };
 
   const mockConnection = {

@@ -1,15 +1,17 @@
 import { Test } from "@nestjs/testing";
 import {EveryEventExchangeStrategy, NestRmqModule} from "../../src";
 import { Provider } from "@nestjs/common";
+import {AnyEventClass} from "../../src/events/types/event-class.type";
 
-export const getBasicModule = async (...handlers: Provider[]) => {
+export const getBasicModule = async (handler: Provider, ...events: AnyEventClass[]) => {
   const moduleRef = await Test.createTestingModule({
     imports: [
       NestRmqModule.forRoot({
         connectionOption: {},
       }),
+      NestRmqModule.forFeature(events)
     ],
-    providers: handlers,
+    providers: [handler],
   }).compile();
 
   await moduleRef.init();
