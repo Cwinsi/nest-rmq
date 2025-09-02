@@ -3,6 +3,7 @@ import { HandlerMetadata } from "../interfaces/handler-metadata.interface";
 import { HandlerOptions } from "../interfaces/handler-options.interface";
 import { EventClass } from "../../events/types/event-class.type";
 import { HandlerAdditionalArgumentType } from "../types/handler-additional-argument.type";
+import { HandlerType } from "../enums/handler-type.enum";
 
 const eventHandlerMetadataSymbol = Symbol("eventHandlerMetadata");
 
@@ -29,6 +30,7 @@ export const EventHandler = <Event>(
       methodName: String(propertyKey),
       className: target.constructor.name,
       options,
+      type: HandlerType.PROCESSOR,
     };
 
     Reflect.defineMetadata(

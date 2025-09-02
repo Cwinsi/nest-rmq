@@ -12,6 +12,7 @@ jest.mock("amqplib", () => ({
   connect: jest.fn(),
 }));
 
+
 describe("HandlerConsumeAutomaticDelivery", () => {
   let { mockChannel } = getMockChannelAndConnection();
 

@@ -11,6 +11,7 @@ import { EventsExchangeStrategy } from "../src/events/interfaces/events-exchange
 import { NestRmqConnectionOptions } from "../src/configs/interfaces/nest-rmq-connection-options.interface";
 import { EventDelivery } from "../src/handlers/decorators/event-handler-delivery.decorator";
 import { EventDeliveryContext } from "../src/handlers/context/event-delivery.context";
+import {getMockChannelAndConnection} from "./utils/amqplib-mock-channel.util";
 
 jest.mock("amqplib", () => ({
   connect: jest.fn(),
@@ -45,16 +46,8 @@ describe("AssertHandlers", () => {
     getEventExchangeName: jest.fn().mockReturnValue("mock-exchange"),
   };
 
-  const mockChannel = {
-    assertQueue: jest.fn(),
-    bindQueue: jest.fn(),
-    consume: jest.fn(),
-    ack: jest.fn(),
-    assertExchange: jest.fn(),
-  };
-  const mockConnection = {
-    createChannel: jest.fn().mockResolvedValue(mockChannel),
-  };
+
+  let { mockChannel } = getMockChannelAndConnection();
 
   const connectionOption: NestRmqConnectionOptions = {
     hostname: faker.internet.ipv4(),
@@ -63,7 +56,7 @@ describe("AssertHandlers", () => {
   };
 
   beforeAll(async () => {
-    (amqplib.connect as jest.Mock).mockResolvedValue(mockConnection);
+    ({ mockChannel } = getMockChannelAndConnection());
 
     moduleRef = await Test.createTestingModule({
       imports: [

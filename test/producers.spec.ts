@@ -5,6 +5,7 @@ import { NestRmqModule } from "../src";
 import amqplib from "amqplib";
 import { EventProducer } from "../src/producers/event-producer";
 import { getEventProducerToken } from "../src/producers/injection/get-event-producer-token";
+import {getMockChannelAndConnection} from "./utils/amqplib-mock-channel.util";
 
 jest.mock("amqplib", () => ({
   connect: jest.fn(),
@@ -19,20 +20,11 @@ describe("Producers", () => {
   let moduleRef: TestingModule;
   let producerRef: EventProducer<TestEvent>;
 
-  const mockChannel = {
-    assertQueue: jest.fn(),
-    bindQueue: jest.fn(),
-    consume: jest.fn(),
-    ack: jest.fn(),
-    assertExchange: jest.fn(),
-    publish: jest.fn(),
-  };
-  const mockConnection = {
-    createChannel: jest.fn().mockResolvedValue(mockChannel),
-  };
+
+  let { mockChannel } = getMockChannelAndConnection();
 
   beforeAll(async () => {
-    (amqplib.connect as jest.Mock).mockResolvedValue(mockConnection);
+  ({ mockChannel } = getMockChannelAndConnection());
 
     moduleRef = await Test.createTestingModule({
       imports: [
@@ -42,6 +34,7 @@ describe("Producers", () => {
         NestRmqModule.forFeature([TestEvent]),
       ],
     }).compile();
+
 
     producerRef = moduleRef.get(getEventProducerToken(TestEvent));
   });

@@ -1,9 +1,10 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { ConfigsModule } from "../configs/configs.module";
 import { AmqpConnectionService } from "./services/amqp-connection.service";
+import { HandlersModule } from "../handlers/handlers.module";
 
 @Module({
-  imports: [ConfigsModule],
+  imports: [ConfigsModule, forwardRef(() => HandlersModule)],
   providers: [AmqpConnectionService],
   exports: [AmqpConnectionService],
 })

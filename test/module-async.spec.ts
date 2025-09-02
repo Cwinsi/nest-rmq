@@ -5,6 +5,7 @@ import { getEventProducerToken } from "../src/producers/injection/get-event-prod
 import { Event } from "../src";
 import amqplib from "amqplib";
 import { Injectable, Module } from "@nestjs/common";
+import {getMockChannelAndConnection} from "./utils/amqplib-mock-channel.util";
 
 jest.mock("amqplib", () => ({
   connect: jest.fn(),
@@ -29,21 +30,10 @@ class FactoryConfigModule {}
 describe("AsyncRootModule", () => {
   let moduleRef: TestingModule;
 
-  const mockChannel = {
-    assertQueue: jest.fn(),
-    bindQueue: jest.fn(),
-    consume: jest.fn(),
-    ack: jest.fn(),
-    assertExchange: jest.fn(),
-    publish: jest.fn(),
-  };
-
-  const mockConnection = {
-    createChannel: jest.fn().mockResolvedValue(mockChannel),
-  };
+  let { mockChannel } = getMockChannelAndConnection();
 
   beforeAll(async () => {
-    (amqplib.connect as jest.Mock).mockResolvedValue(mockConnection);
+    ({ mockChannel } = getMockChannelAndConnection());
 
     moduleRef = await Test.createTestingModule({
       imports: [

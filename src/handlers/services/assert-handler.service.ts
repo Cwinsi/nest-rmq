@@ -1,17 +1,19 @@
 import { AmqpConnectionService } from "../../amqp/services/amqp-connection.service";
-import { Injectable, OnModuleInit } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, OnModuleInit } from "@nestjs/common";
 import { HandlerExplorerMethodInterface } from "../../handler-explorer/interfaces/handler-explorer-method.interface";
-import { ConfigsService } from "../../configs/configs.service";
 import { HandlerExplorerService } from "../../handler-explorer/services/handler-explorer.service";
 import { HandlerAdditionalArgumentPipelineService } from "../handler-additional-arguments/services/handler-additional-argument-pipeline.service";
 import { HandlerConsumeDataBuilder } from "../builders/handler-consume-data.builder";
+import { AssertProcessorHandlerService } from "./handler-types/assert-processor-handler.service";
 
 @Injectable()
 export class AssertHandlerService implements OnModuleInit {
   constructor(
+    @Inject(forwardRef(() => AmqpConnectionService))
     private readonly amqpConnectionService: AmqpConnectionService,
+
     private readonly handlerExplorerService: HandlerExplorerService,
-    private readonly configsService: ConfigsService,
+    private readonly assertProcessorHandlerService: AssertProcessorHandlerService,
     private readonly handlerAdditionalArgumentPipelineService: HandlerAdditionalArgumentPipelineService,
   ) {}
 
@@ -30,39 +32,15 @@ export class AssertHandlerService implements OnModuleInit {
 
   async assertHandler(handler: HandlerExplorerMethodInterface): Promise<void> {
     const channel = await this.amqpConnectionService.getChannel();
-    const config = this.configsService.getConfigs();
-
-    const handlerQueueName =
-      config.handlerEventQueueNameStrategy.resolveQueueName(
-        handler.handlerMetadata,
-        handler.eventMetadata,
-        config,
-      );
-
-    const handlerConfig = this.configsService.getHandlerConfigs(
-      handler.handlerMetadata.options,
-    );
-
-    const eventExchange =
-      await config.eventsExchangeStrategy.getEventExchangeName(
-        channel,
-        handler.eventMetadata,
-        handler.handlerMetadata.eventClass,
-        config,
-      );
-
-    await channel.assertQueue(handlerQueueName, {
-      durable: handlerConfig.durable,
-    });
-
-    await channel.bindQueue(
-      handlerQueueName,
-      eventExchange,
-      handler.eventMetadata.name,
-    );
 
     const pipeline =
       this.handlerAdditionalArgumentPipelineService.getPipeline();
+
+    const handlerQueueName =
+      await this.assertProcessorHandlerService.createHandlerQueues(
+        channel,
+        handler,
+      );
 
     await channel.consume(handlerQueueName, async (message) => {
       if (!message) {

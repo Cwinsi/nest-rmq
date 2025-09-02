@@ -8,4 +8,5 @@ export interface NestRmqOptions {
   handlerEventQueueNameStrategy?: HandlerEventQueueNameStrategy; // TODO: rename
   eventsExchangeStrategy?: EventsExchangeStrategy; // TODO: rename
   connectionOption: NestRmqConnectionOptions;
+  instanceId?: string;
 }
