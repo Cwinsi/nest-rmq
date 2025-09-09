@@ -7,7 +7,9 @@
     "build": "rimraf dist && tsc",
     "dev": "ts-node src/index.ts",
     "publish": "npm publish --access public",
-    "test": "jest ",
+    "lint": "eslint --fix",
+    "test": "jest test/unit",
+    "test:integration": "jest test/integration --detectOpenHandles --runInBand",
     "test:watch": "jest --watch"
   },
   "files": [
@@ -54,12 +56,14 @@
     "jiti": "^2.5.1",
     "reflect-metadata": "^0.2.2",
     "rimraf": "^6.0.1",
+    "testcontainers": "^11.5.1",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "5.8.3",
     "typescript-eslint": "^8.38.0"
   },
   "dependencies": {
+    "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.8",
     "lodash": "^4.17.21"
   }

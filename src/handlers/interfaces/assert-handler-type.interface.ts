@@ -1,5 +1,5 @@
 import { HandlerExplorerMethodInterface } from "../../handler-explorer/interfaces/handler-explorer-method.interface";
-import { Channel } from "amqplib";
+import { ChannelWrapper } from "amqp-connection-manager";
 
 export interface AssertHandlerTypeInterface {
   /**
@@ -8,7 +8,7 @@ export interface AssertHandlerTypeInterface {
    * @return name of queue to consume events
    */
   createHandlerQueues(
-    channel: Channel,
+    channelWrapper: ChannelWrapper,
     handler: HandlerExplorerMethodInterface,
   ): Promise<string>;
 }

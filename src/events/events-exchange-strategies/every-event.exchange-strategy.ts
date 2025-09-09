@@ -1,6 +1,7 @@
 import { EventsExchangeStrategy } from "../interfaces/events-exchange-strategy.interface";
-import { Channel } from "amqplib";
 import { EventMetadata } from "../interfaces/event-metadata.interface";
+import { ChannelWrapper } from "amqp-connection-manager";
+import { Channel } from "amqplib";
 
 export class EveryEventExchangeStrategy implements EventsExchangeStrategy {
   constructor(private readonly exchangePrefix: string = "nest-rmq-event") {}
@@ -8,7 +9,7 @@ export class EveryEventExchangeStrategy implements EventsExchangeStrategy {
   private eventExchanges = new Map<string, string>();
 
   async getEventExchangeName(
-    channel: Channel,
+    channelWrapper: ChannelWrapper,
     eventMetadata: EventMetadata,
   ): Promise<string> {
     const eventName = eventMetadata.name;
@@ -20,9 +21,11 @@ export class EveryEventExchangeStrategy implements EventsExchangeStrategy {
 
     const exchangeName = `${this.exchangePrefix}.${eventName}`;
 
-    await channel.assertExchange(exchangeName, "direct", {
-      durable: true,
-    });
+    await channelWrapper.addSetup((channel: Channel) =>
+      channel.assertExchange(exchangeName, "direct", {
+        durable: true,
+      }),
+    );
 
     this.eventExchanges.set(eventName, exchangeName);
     return exchangeName;

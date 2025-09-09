@@ -1,10 +1,8 @@
 import "jest-extended";
-import { Event } from "../src/events/decorators/event.decorator";
-import { EventHandler } from "../src/handlers/decorators/event-handler.decorator";
+import { Event } from "../../src/events/decorators/event.decorator";
+import { EventHandler } from "../../src/handlers/decorators/event-handler.decorator";
 import { Injectable } from "@nestjs/common";
 
-import { EventDelivery } from "../src/handlers/decorators/event-handler-delivery.decorator";
-import { EventDeliveryContext } from "../src/handlers/context/event-delivery.context";
 import { getBasicModule } from "./utils/basic-module-setup.util";
 import { getMockChannelAndConnection } from "./utils/amqplib-mock-channel.util";
 
@@ -12,15 +10,14 @@ jest.mock("amqplib", () => ({
   connect: jest.fn(),
 }));
 
-
-describe("HandlerConsumeAutomaticDelivery", () => {
+describe("HandlerConsume", () => {
   let { mockChannel } = getMockChannelAndConnection();
 
   beforeEach(async () => {
     ({ mockChannel } = getMockChannelAndConnection());
   });
 
-  it("after event handler success execution should call ack", async () => {
+  it("should invoke handler without event event object", async () => {
     const eventHandlerLogicMock = jest.fn();
 
     @Event("test")
@@ -31,18 +28,15 @@ describe("HandlerConsumeAutomaticDelivery", () => {
     @Injectable()
     class TestHandler {
       @EventHandler(TestEvent)
-      manualHandleEvent(
-        event: TestEvent,
-      ) {
+      manualHandleEvent(event: TestEvent) {
         eventHandlerLogicMock(event);
       }
     }
 
     await getBasicModule(TestHandler);
-
     const consumeCallback = mockChannel.consume.mock.calls[0][1];
 
-    const event = new TestEvent("Alf");
+    const event = new TestEvent("Pedro");
     const fakeMessage = {
       content: Buffer.from(JSON.stringify(event)),
     };
@@ -50,12 +44,14 @@ describe("HandlerConsumeAutomaticDelivery", () => {
     await consumeCallback(fakeMessage);
 
     expect(eventHandlerLogicMock).toHaveBeenCalledTimes(1);
+    expect(eventHandlerLogicMock).toHaveBeenCalledWith(event);
 
-    expect(mockChannel.ack).toHaveBeenCalledTimes(1);
-    expect(mockChannel.nack).not.toHaveBeenCalled();
+    const receivedEvent = eventHandlerLogicMock.mock.calls[0][0];
+    expect(receivedEvent).toBeInstanceOf(TestEvent);
   });
 
-  it("after event handler exception should call nack", async () => {
+  it("consumer should have access to correct this", async () => {
+    const eventHandlerLogicMock = jest.fn();
 
     @Event("test")
     class TestEvent {
@@ -64,28 +60,27 @@ describe("HandlerConsumeAutomaticDelivery", () => {
 
     @Injectable()
     class TestHandler {
+      constructor() {
+        this.thisMethod = eventHandlerLogicMock;
+      }
+
+      thisMethod: any;
+
       @EventHandler(TestEvent)
-      manualHandleEvent(
-        event: TestEvent,
-      ) {
-        throw new Error('Supper painful error ;(')
+      manualHandleEvent(_: TestEvent) {
+        this.thisMethod();
       }
     }
 
     await getBasicModule(TestHandler);
-
     const consumeCallback = mockChannel.consume.mock.calls[0][1];
 
-    const event = new TestEvent("Alf");
+    const event = new TestEvent("Pedro");
     const fakeMessage = {
       content: Buffer.from(JSON.stringify(event)),
     };
-
     await consumeCallback(fakeMessage);
 
-
-    expect(mockChannel.nack).toHaveBeenCalledTimes(1);
-    expect(mockChannel.ack).not.toHaveBeenCalled();
+    expect(eventHandlerLogicMock).toHaveBeenCalled();
   });
-
 });

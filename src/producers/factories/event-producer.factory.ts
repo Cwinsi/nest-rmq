@@ -15,7 +15,7 @@ export class EventProducerFactory {
   async getProducer<Event>(
     eventClass: EventClass<Event>,
   ): Promise<EventProducer<Event>> {
-    const chanel = await this.amqpConnectionService.getChannel();
+    const channelWrapper = await this.amqpConnectionService.getChannelWrapper();
 
     const eventMetadata = getEventMetadata(eventClass);
     if (!eventMetadata)
@@ -23,10 +23,9 @@ export class EventProducerFactory {
 
     const configs = this.configsService.getConfigs();
 
-    // TODO: optimize, use fast sync method
     const exchangeName =
       await configs.eventsExchangeStrategy.getEventExchangeName(
-        chanel,
+        channelWrapper,
         eventMetadata,
         eventClass,
         configs,

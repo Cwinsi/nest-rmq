@@ -1,10 +1,10 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { ConfigsService } from "../src/configs/configs.service";
-import { NestRmqModule } from "../src/nest-rmq.module";
-import { ConfigsModule } from "../src/configs/configs.module";
-import { NestRmqOptions } from "../src/configs/interfaces/nest-rmq-options.interface";
+import { ConfigsService } from "../../src/configs/configs.service";
+import { NestRmqModule } from "../../src/nest-rmq.module";
+import { ConfigsModule } from "../../src/configs/configs.module";
+import { NestRmqOptions } from "../../src/configs/interfaces/nest-rmq-options.interface";
 import { faker } from "@faker-js/faker";
-import { defaultHandlerOptions } from "../src/configs/values/default-handler-options.value";
+import { defaultHandlerOptions } from "../../src/configs/values/default-handler-options.value";
 
 describe("Config module", () => {
   let moduleRef: TestingModule;

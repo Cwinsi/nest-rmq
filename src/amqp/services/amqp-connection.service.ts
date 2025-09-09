@@ -1,38 +1,65 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import amqplib, { Channel } from "amqplib";
+import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import { ConfigsService } from "../../configs/configs.service";
-import { AssertHandlerService } from "../../handlers/services/assert-handler.service";
+import amqp, { AmqpConnectionManager } from "amqp-connection-manager";
+import type { ChannelWrapper } from "amqp-connection-manager";
 
 @Injectable()
-export class AmqpConnectionService {
-  private chanel: Channel | null = null;
+export class AmqpConnectionService implements OnModuleInit, OnModuleDestroy {
+  private channelWrapper: ChannelWrapper | null = null;
+  private connection: AmqpConnectionManager | null = null;
 
-  constructor(
-    private readonly configsService: ConfigsService,
+  constructor(private readonly configsService: ConfigsService) {}
 
-    @Inject(forwardRef(() => AssertHandlerService))
-    private readonly assertHandlerService: AssertHandlerService,
-  ) {}
-
-  async connect(): Promise<Channel> {
-    const amqpConnection = await amqplib.connect(
-      this.configsService.getConfigs().connectionOption,
-    );
-
-    this.chanel = await amqpConnection.createChannel();
-
-    this.chanel.on("close", async () => {
-      await this.assertHandlerService.assertHandlers();
-    });
-
-    return this.chanel;
+  async onModuleInit() {
+    await this.getChannelWrapper();
   }
 
-  async getChannel(): Promise<Channel> {
-    if (!this.chanel) {
+  async onModuleDestroy() {
+    if (this.channelWrapper) {
+      await this.channelWrapper.close();
+      this.channelWrapper.removeAllListeners();
+      this.channelWrapper = null;
+    }
+
+    if (this.connection) {
+      await this.connection.close();
+      this.connection = null;
+    }
+  }
+
+  async connect(): Promise<ChannelWrapper> {
+    const connectionOption = this.configsService.getConfigs().connectionOption;
+    this.connection = amqp.connect({
+      url: connectionOption.url,
+      connectionOptions: {
+        timeout: connectionOption.timeout,
+      },
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      this.connection!.on("connect", () => resolve());
+      this.connection!.on("disconnect", (err) =>
+        reject(new Error(`AMQP disconnect: ${err?.err?.message || err}`)),
+      );
+      this.connection!.on("error", (err) =>
+        reject(new Error(`AMQP error: ${err?.err?.message || err}`)),
+      );
+      this.connection!.on("connectFailed", (err) =>
+        reject(new Error(`AMQP connectFailed: ${err?.err?.message || err}`)),
+      );
+    });
+
+    const channelWrapper: ChannelWrapper = this.connection.createChannel({});
+
+    this.channelWrapper = channelWrapper;
+    return channelWrapper;
+  }
+
+  async getChannelWrapper(): Promise<ChannelWrapper> {
+    if (!this.channelWrapper) {
       return await this.connect();
     }
 
-    return this.chanel;
+    return this.channelWrapper;
   }
 }

@@ -1,11 +1,10 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { ConfigsService } from "../src/configs/configs.service";
-import { NestRmqModule } from "../src/nest-rmq.module";
-import { getEventProducerToken } from "../src/producers/injection/get-event-producer-token";
-import { Event } from "../src";
-import amqplib from "amqplib";
+import { ConfigsService } from "../../src/configs/configs.service";
+import { NestRmqModule } from "../../src/nest-rmq.module";
+import { getEventProducerToken } from "../../src/producers/injection/get-event-producer-token";
+import { Event } from "../../src";
 import { Injectable, Module } from "@nestjs/common";
-import {getMockChannelAndConnection} from "./utils/amqplib-mock-channel.util";
+import { getMockChannelAndConnection } from "./utils/amqplib-mock-channel.util";
 
 jest.mock("amqplib", () => ({
   connect: jest.fn(),
@@ -18,7 +17,7 @@ class TestEvent {
 
 @Injectable()
 class FactoryConfigProvider {
-  public port: number = 333;
+  public url = "amqp://test";
 }
 
 @Module({
@@ -30,10 +29,10 @@ class FactoryConfigModule {}
 describe("AsyncRootModule", () => {
   let moduleRef: TestingModule;
 
-  let { mockChannel } = getMockChannelAndConnection();
+  getMockChannelAndConnection();
 
   beforeAll(async () => {
-    ({ mockChannel } = getMockChannelAndConnection());
+    getMockChannelAndConnection();
 
     moduleRef = await Test.createTestingModule({
       imports: [
@@ -42,7 +41,7 @@ describe("AsyncRootModule", () => {
           useFactory: async (config: FactoryConfigProvider) => {
             return {
               connectionOption: {
-                port: config.port,
+                url: config.url,
               },
             };
           },
@@ -69,6 +68,6 @@ describe("AsyncRootModule", () => {
     expect(configsService).toBeDefined();
 
     const configs = configsService.getConfigs();
-    expect(configs.connectionOption.port).toEqual(333);
+    expect(configs.connectionOption.url).toEqual("amqp://test");
   });
 });

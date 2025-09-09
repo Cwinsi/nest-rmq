@@ -1,17 +1,16 @@
 import "jest-extended";
-import { Event } from "../src/events/decorators/event.decorator";
-import { EventHandler } from "../src/handlers/decorators/event-handler.decorator";
+import { Event } from "../../src/events/decorators/event.decorator";
+import { EventHandler } from "../../src/handlers/decorators/event-handler.decorator";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Injectable } from "@nestjs/common";
-import { NestRmqModule } from "../src/nest-rmq.module";
+import { NestRmqModule } from "../../src/nest-rmq.module";
 import { faker } from "@faker-js/faker";
-import amqplib from "amqplib";
-import { HandlerEventQueueNameStrategy } from "../src/handlers/interfaces/handler-event-queue-name-strategy.interface";
-import { EventsExchangeStrategy } from "../src/events/interfaces/events-exchange-strategy.interface";
-import { NestRmqConnectionOptions } from "../src/configs/interfaces/nest-rmq-connection-options.interface";
-import { EventDelivery } from "../src/handlers/decorators/event-handler-delivery.decorator";
-import { EventDeliveryContext } from "../src/handlers/context/event-delivery.context";
-import {getMockChannelAndConnection} from "./utils/amqplib-mock-channel.util";
+import { HandlerEventQueueNameStrategy } from "../../src/handlers/interfaces/handler-event-queue-name-strategy.interface";
+import { EventsExchangeStrategy } from "../../src/events/interfaces/events-exchange-strategy.interface";
+import { NestRmqConnectionOptions } from "../../src/configs/interfaces/nest-rmq-connection-options.interface";
+import { EventDelivery } from "../../src/handlers/decorators/event-handler-delivery.decorator";
+import { EventDeliveryContext } from "../../src/handlers/context/event-delivery.context";
+import { getMockChannelAndConnection } from "./utils/amqplib-mock-channel.util";
 
 jest.mock("amqplib", () => ({
   connect: jest.fn(),
@@ -26,7 +25,7 @@ class TestEvent2 {}
 @Injectable()
 class TestHandler {
   @EventHandler(TestEvent)
-  handleEvent(_event: TestEvent, @EventDelivery() a: EventDeliveryContext) {}
+  handleEvent(_event: TestEvent, @EventDelivery() _: EventDeliveryContext) {}
 
   @EventHandler(TestEvent2)
   handleEvent2(_event: TestEvent2) {}
@@ -46,13 +45,10 @@ describe("AssertHandlers", () => {
     getEventExchangeName: jest.fn().mockReturnValue("mock-exchange"),
   };
 
-
   let { mockChannel } = getMockChannelAndConnection();
 
   const connectionOption: NestRmqConnectionOptions = {
-    hostname: faker.internet.ipv4(),
-    username: faker.internet.username(),
-    password: faker.internet.password(),
+    url: faker.internet.url(),
   };
 
   beforeAll(async () => {

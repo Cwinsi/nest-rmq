@@ -10,11 +10,15 @@ export class EventProducer<Event> {
 
   async publish(event: Event): Promise<void> {
     const payload = Buffer.from(JSON.stringify(event));
+    const channelWrapper = await this.amqpConnectionService.getChannelWrapper();
 
-    const chanel = await this.amqpConnectionService.getChannel();
-
-    chanel.publish(this.eventExchangeName, this.eventMetadata.name, payload, {
-      persistent: true,
-    });
+    await channelWrapper.publish(
+      this.eventExchangeName,
+      this.eventMetadata.name,
+      payload,
+      {
+        persistent: true,
+      },
+    );
   }
 }

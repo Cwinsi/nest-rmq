@@ -1,9 +1,9 @@
-import { Event } from "../src/events/decorators/event.decorator";
-import { EventHandler } from "../src/handlers/decorators/event-handler.decorator";
-import { HandlerExplorerService } from "../src/handler-explorer/services/handler-explorer.service";
+import { Event } from "../../src/events/decorators/event.decorator";
+import { EventHandler } from "../../src/handlers/decorators/event-handler.decorator";
+import { HandlerExplorerService } from "../../src/handler-explorer/services/handler-explorer.service";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Injectable } from "@nestjs/common";
-import { HandlerExplorerModule } from "../src/handler-explorer/handler-explorer.module";
+import { HandlerExplorerModule } from "../../src/handler-explorer/handler-explorer.module";
 
 @Event("test")
 class TestEvent {}

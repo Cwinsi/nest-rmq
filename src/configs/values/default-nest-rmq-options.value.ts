@@ -5,7 +5,11 @@ import { SingleExchangeStrategy } from "../../events/events-exchange-strategies/
 
 export const defaultNestRmqOptions: RequiredNestRMQOptions = {
   defaultHandlerOptions,
-  connectionOption: {},
+  connectionOption: {
+    url: "amqp://localhost:5672",
+    timeout: 5000,
+  },
+  instanceId: "nest-rmq",
 
   handlerEventQueueNameStrategy: new HandlerClassMethodQueueNameStrategy(),
   eventsExchangeStrategy: new SingleExchangeStrategy(),

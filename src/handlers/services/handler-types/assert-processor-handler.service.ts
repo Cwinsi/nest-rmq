@@ -1,8 +1,9 @@
 import { HandlerExplorerMethodInterface } from "../../../handler-explorer/interfaces/handler-explorer-method.interface";
 import { AssertHandlerTypeInterface } from "../../interfaces/assert-handler-type.interface";
 import { Injectable } from "@nestjs/common";
-import { Channel } from "amqplib";
 import { ConfigsService } from "../../../configs/configs.service";
+import { ChannelWrapper } from "amqp-connection-manager";
+import { Channel } from "amqplib";
 
 @Injectable()
 export class AssertProcessorHandlerService
@@ -11,7 +12,7 @@ export class AssertProcessorHandlerService
   constructor(private readonly configsService: ConfigsService) {}
 
   async createHandlerQueues(
-    channel: Channel,
+    channelWrapper: ChannelWrapper,
     handler: HandlerExplorerMethodInterface,
   ): Promise<string> {
     const config = this.configsService.getConfigs();
@@ -29,21 +30,23 @@ export class AssertProcessorHandlerService
 
     const eventExchange =
       await config.eventsExchangeStrategy.getEventExchangeName(
-        channel,
+        channelWrapper,
         handler.eventMetadata,
         handler.handlerMetadata.eventClass,
         config,
       );
 
-    await channel.assertQueue(handlerQueueName, {
-      durable: handlerConfig.durable,
-    });
+    await channelWrapper.addSetup(async (channel: Channel) => {
+      await channel.assertQueue(handlerQueueName, {
+        durable: handlerConfig.durable,
+      });
 
-    await channel.bindQueue(
-      handlerQueueName,
-      eventExchange,
-      handler.eventMetadata.name,
-    );
+      await channel.bindQueue(
+        handlerQueueName,
+        eventExchange,
+        handler.eventMetadata.name,
+      );
+    });
 
     return handlerQueueName;
   }

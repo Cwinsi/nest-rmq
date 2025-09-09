@@ -1,13 +1,11 @@
 import "jest-extended";
-import { Event } from "../src/events/decorators/event.decorator";
-import { EventHandler } from "../src/handlers/decorators/event-handler.decorator";
-import {Injectable, OnApplicationBootstrap, OnModuleInit} from "@nestjs/common";
+import { Event } from "../../src/events/decorators/event.decorator";
+import { EventHandler } from "../../src/handlers/decorators/event-handler.decorator";
+import { Injectable, OnModuleInit } from "@nestjs/common";
 
-import { EventDelivery } from "../src/handlers/decorators/event-handler-delivery.decorator";
-import { EventDeliveryContext } from "../src/handlers/context/event-delivery.context";
 import { getBasicModule } from "./utils/basic-module-setup.util";
 import { getMockChannelAndConnection } from "./utils/amqplib-mock-channel.util";
-import {EventProducer, InjectEventProducer} from "../src";
+import { EventProducer, InjectEventProducer } from "../../src";
 
 jest.mock("amqplib", () => ({
   connect: jest.fn(),
@@ -32,17 +30,15 @@ describe("HandlerAndProducerInit", () => {
     class TestHandler implements OnModuleInit {
       constructor(
         @InjectEventProducer(TestEvent)
-        private readonly testEventEventProducer: EventProducer<TestEvent>) {
-      }
+        private readonly testEventEventProducer: EventProducer<TestEvent>,
+      ) {}
 
       onModuleInit() {
-        this.testEventEventProducer.publish(new TestEvent("Pedro"))
+        this.testEventEventProducer.publish(new TestEvent("Pedro"));
       }
 
       @EventHandler(TestEvent)
-      manualHandleEvent(
-        event: TestEvent,
-      ) {
+      manualHandleEvent(event: TestEvent) {
         eventHandlerLogicMock(event);
       }
     }
@@ -50,5 +46,4 @@ describe("HandlerAndProducerInit", () => {
     await getBasicModule(TestHandler, TestEvent);
     expect(mockChannel.consume).toHaveBeenCalledBefore(mockChannel.publish);
   });
-
 });

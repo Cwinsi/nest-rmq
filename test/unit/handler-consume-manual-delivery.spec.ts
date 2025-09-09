@@ -1,10 +1,10 @@
 import "jest-extended";
-import { Event } from "../src/events/decorators/event.decorator";
-import { EventHandler } from "../src/handlers/decorators/event-handler.decorator";
+import { Event } from "../../src/events/decorators/event.decorator";
+import { EventHandler } from "../../src/handlers/decorators/event-handler.decorator";
 import { Injectable } from "@nestjs/common";
 
-import { EventDelivery } from "../src/handlers/decorators/event-handler-delivery.decorator";
-import { EventDeliveryContext } from "../src/handlers/context/event-delivery.context";
+import { EventDelivery } from "../../src/handlers/decorators/event-handler-delivery.decorator";
+import { EventDeliveryContext } from "../../src/handlers/context/event-delivery.context";
 import { getBasicModule } from "./utils/basic-module-setup.util";
 import { getMockChannelAndConnection } from "./utils/amqplib-mock-channel.util";
 
@@ -146,13 +146,9 @@ describe("HandlerConsumeManualDelivery", () => {
       }
 
       @Injectable()
-      class TestHandler {
+      class _TestHandler {
         @EventHandler(TestEvent)
-        manualHandleEvent(
-          event: TestEvent,
-          @EventDelivery() eventHandlerContext: object,
-        ) {
-        }
+        manualHandleEvent(_: TestEvent, @EventDelivery() _delivery: object) {}
       }
     }).toThrow();
   });
