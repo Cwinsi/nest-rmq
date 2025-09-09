@@ -4,10 +4,9 @@ import { HandlerOptions } from "../interfaces/handler-options.interface";
 import { EventClass } from "../../events/types/event-class.type";
 import { HandlerAdditionalArgumentType } from "../types/handler-additional-argument.type";
 import { HandlerType } from "../enums/handler-type.enum";
+import { eventHandlerMetadataSymbol } from "../utils/event-processor-metadata.util";
 
-const eventHandlerMetadataSymbol = Symbol("eventHandlerMetadata");
-
-export const EventHandler = <Event>(
+export const EventProcessor = <Event>(
   eventClass: EventClass<Event>,
   options: HandlerOptions = {},
 ) => {
@@ -20,7 +19,7 @@ export const EventHandler = <Event>(
   ) => {
     if (!descriptor.value) {
       throw new Error(
-        `@EventHandler decorator can only be applied to methods, but '${String(propertyKey)}' has no value.`,
+        `@EventProcessor decorator can only be applied to methods, but '${String(propertyKey)}' has no value.`,
       );
     }
 
@@ -39,10 +38,4 @@ export const EventHandler = <Event>(
       descriptor.value,
     );
   };
-};
-
-export const getEventHandlerMetadata = (
-  target: Function,
-): HandlerMetadata | null => {
-  return Reflect.getMetadata(eventHandlerMetadataSymbol, target);
 };

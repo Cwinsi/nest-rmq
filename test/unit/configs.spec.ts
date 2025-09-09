@@ -6,13 +6,13 @@ import { NestRmqOptions } from "../../src/configs/interfaces/nest-rmq-options.in
 import { faker } from "@faker-js/faker";
 import { defaultHandlerOptions } from "../../src/configs/values/default-handler-options.value";
 
-describe("Config module", () => {
+describe("Configs module", () => {
   let moduleRef: TestingModule;
   let configsService: ConfigsService;
 
   const moduleClientOptions: NestRmqOptions = {
     connectionOption: {
-      port: faker.number.int({ min: 3000, max: 4000 }),
+      url: faker.internet.url(),
     },
     defaultHandlerOptions: {
       durable: false,
@@ -44,9 +44,9 @@ describe("Config module", () => {
   it("provided configs should be available", () => {
     const configs = configsService.getConfigs();
 
-    expect(configs.connectionOption.port).toBeDefined();
-    expect(configs.connectionOption.port).toEqual(
-      moduleClientOptions.connectionOption.port,
+    expect(configs.connectionOption.url).toBeDefined();
+    expect(configs.connectionOption.url).toEqual(
+      moduleClientOptions.connectionOption.url,
     );
   });
 

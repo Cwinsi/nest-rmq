@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { DiscoveryService, MetadataScanner } from "@nestjs/core";
-import { getEventHandlerMetadata } from "../../handlers/decorators/event-handler.decorator";
 import { getEventMetadata } from "../../events/decorators/event.decorator";
 import { HandlerExplorerMethodInterface } from "../interfaces/handler-explorer-method.interface";
+import { getEventProcessorMetadata } from "../../handlers/utils/event-processor-metadata.util";
 
 @Injectable()
 export class HandlerExplorerService {
@@ -38,7 +38,7 @@ export class HandlerExplorerService {
       for (const methodName of methods) {
         const methodRef = instance[methodName];
 
-        const handlerMetadata = getEventHandlerMetadata(methodRef);
+        const handlerMetadata = getEventProcessorMetadata(methodRef);
         if (!handlerMetadata) continue;
 
         const eventMetadata = getEventMetadata(handlerMetadata.eventClass);

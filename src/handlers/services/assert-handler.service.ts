@@ -4,8 +4,8 @@ import { HandlerExplorerMethodInterface } from "../../handler-explorer/interface
 import { HandlerExplorerService } from "../../handler-explorer/services/handler-explorer.service";
 import { HandlerAdditionalArgumentPipelineService } from "../handler-additional-arguments/services/handler-additional-argument-pipeline.service";
 import { HandlerConsumeDataBuilder } from "../builders/handler-consume-data.builder";
-import { AssertProcessorHandlerService } from "./handler-types/assert-processor-handler.service";
 import { Channel } from "amqplib";
+import { AssertHandlerTypesService } from "./assert-handler-types.service";
 
 @Injectable()
 export class AssertHandlerService implements OnModuleInit {
@@ -14,7 +14,7 @@ export class AssertHandlerService implements OnModuleInit {
     private readonly amqpConnectionService: AmqpConnectionService,
 
     private readonly handlerExplorerService: HandlerExplorerService,
-    private readonly assertProcessorHandlerService: AssertProcessorHandlerService,
+    private readonly assertHandlerTypesService: AssertHandlerTypesService,
     private readonly handlerAdditionalArgumentPipelineService: HandlerAdditionalArgumentPipelineService,
   ) {}
 
@@ -37,14 +37,18 @@ export class AssertHandlerService implements OnModuleInit {
   async assertHandler(handler: HandlerExplorerMethodInterface): Promise<void> {
     const channelWrapper = await this.amqpConnectionService.getChannelWrapper();
 
+    const assertHandlerType =
+      this.assertHandlerTypesService.getAssertHandlerForTypeOrFail(
+        handler.handlerMetadata.type,
+      );
+
     const pipeline =
       this.handlerAdditionalArgumentPipelineService.getPipeline();
 
-    const handlerQueueName =
-      await this.assertProcessorHandlerService.createHandlerQueues(
-        channelWrapper,
-        handler,
-      );
+    const handlerQueueName = await assertHandlerType.createHandlerQueues(
+      channelWrapper,
+      handler,
+    );
 
     await channelWrapper.addSetup((channel: Channel) => {
       channel.consume(handlerQueueName, async (message) => {
@@ -62,13 +66,13 @@ export class AssertHandlerService implements OnModuleInit {
         const handlerArguments = handlerConsumeDataBuilder.buildArguments();
         const consumeData = handlerConsumeDataBuilder.build();
 
+        // TODO: refactor
         if (consumeData.automaticProcessing) {
           try {
             await handler.method.apply(handler.instance, handlerArguments);
 
             consumeData.handlerDeliveryContext.ack();
           } catch (_) {
-            // TODO: add logs
             consumeData.handlerDeliveryContext.nack();
           }
         } else {

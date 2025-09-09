@@ -1,18 +1,18 @@
 import "jest-extended";
 import { Event } from "../../src/events/decorators/event.decorator";
-import { EventHandler } from "../../src/handlers/decorators/event-handler.decorator";
+import { EventProcessor } from "../../src/handlers/decorators/event-processor.decorator";
 import { Injectable } from "@nestjs/common";
 
 import { getBasicModule } from "./utils/basic-module-setup.util";
 import { getMockChannelAndConnection } from "./utils/amqplib-mock-channel.util";
-import { EventProperties } from "../../src/handlers/decorators/event-handler-properties.decorator";
+import { EventProperties } from "../../src/handlers/decorators/event-properties.decorator";
 import { EventPropertiesContext } from "../../src";
 
 jest.mock("amqplib", () => ({
   connect: jest.fn(),
 }));
 
-describe("HandlerConsumeProperties", () => {
+describe("Handler consume properties", () => {
   let { mockChannel } = getMockChannelAndConnection();
 
   beforeEach(async () => {
@@ -30,7 +30,7 @@ describe("HandlerConsumeProperties", () => {
 
     @Injectable()
     class TestHandler {
-      @EventHandler(TestEvent)
+      @EventProcessor(TestEvent)
       manualHandleEvent(
         event: TestEvent,
         @EventProperties() eventPropertiesContext: EventPropertiesContext,

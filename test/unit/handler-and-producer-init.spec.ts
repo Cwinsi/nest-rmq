@@ -1,6 +1,6 @@
 import "jest-extended";
 import { Event } from "../../src/events/decorators/event.decorator";
-import { EventHandler } from "../../src/handlers/decorators/event-handler.decorator";
+import { EventProcessor } from "../../src/handlers/decorators/event-processor.decorator";
 import { Injectable, OnModuleInit } from "@nestjs/common";
 
 import { getBasicModule } from "./utils/basic-module-setup.util";
@@ -11,7 +11,7 @@ jest.mock("amqplib", () => ({
   connect: jest.fn(),
 }));
 
-describe("HandlerAndProducerInit", () => {
+describe("Handler and producer init", () => {
   let { mockChannel } = getMockChannelAndConnection();
 
   beforeEach(async () => {
@@ -37,7 +37,7 @@ describe("HandlerAndProducerInit", () => {
         this.testEventEventProducer.publish(new TestEvent("Pedro"));
       }
 
-      @EventHandler(TestEvent)
+      @EventProcessor(TestEvent)
       manualHandleEvent(event: TestEvent) {
         eventHandlerLogicMock(event);
       }

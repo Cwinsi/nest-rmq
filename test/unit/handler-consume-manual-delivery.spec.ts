@@ -1,9 +1,9 @@
 import "jest-extended";
 import { Event } from "../../src/events/decorators/event.decorator";
-import { EventHandler } from "../../src/handlers/decorators/event-handler.decorator";
+import { EventProcessor } from "../../src/handlers/decorators/event-processor.decorator";
 import { Injectable } from "@nestjs/common";
 
-import { EventDelivery } from "../../src/handlers/decorators/event-handler-delivery.decorator";
+import { EventDelivery } from "../../src/handlers/decorators/./event-delivery.decorator";
 import { EventDeliveryContext } from "../../src/handlers/context/event-delivery.context";
 import { getBasicModule } from "./utils/basic-module-setup.util";
 import { getMockChannelAndConnection } from "./utils/amqplib-mock-channel.util";
@@ -12,7 +12,7 @@ jest.mock("amqplib", () => ({
   connect: jest.fn(),
 }));
 
-describe("HandlerConsumeManualDelivery", () => {
+describe("Handler consume manual delivery", () => {
   let { mockChannel } = getMockChannelAndConnection();
 
   beforeEach(async () => {
@@ -30,7 +30,7 @@ describe("HandlerConsumeManualDelivery", () => {
 
     @Injectable()
     class TestHandler {
-      @EventHandler(TestEvent)
+      @EventProcessor(TestEvent)
       manualHandleEvent(
         event: TestEvent,
         @EventDelivery() eventHandlerContext: EventDeliveryContext,
@@ -68,7 +68,7 @@ describe("HandlerConsumeManualDelivery", () => {
 
     @Injectable()
     class TestHandler {
-      @EventHandler(TestEvent)
+      @EventProcessor(TestEvent)
       manualHandleEvent(
         event: TestEvent,
         @EventDelivery() eventHandlerContext: EventDeliveryContext,
@@ -109,7 +109,7 @@ describe("HandlerConsumeManualDelivery", () => {
 
     @Injectable()
     class TestHandler {
-      @EventHandler(TestEvent)
+      @EventProcessor(TestEvent)
       manualHandleEvent(
         event: TestEvent,
         @EventDelivery() eventHandlerContext: EventDeliveryContext,
@@ -147,7 +147,7 @@ describe("HandlerConsumeManualDelivery", () => {
 
       @Injectable()
       class _TestHandler {
-        @EventHandler(TestEvent)
+        @EventProcessor(TestEvent)
         manualHandleEvent(_: TestEvent, @EventDelivery() _delivery: object) {}
       }
     }).toThrow();

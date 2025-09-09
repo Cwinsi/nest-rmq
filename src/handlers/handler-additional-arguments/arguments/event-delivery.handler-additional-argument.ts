@@ -1,6 +1,6 @@
 import { HandlerConsumeDataInterface } from "../../interfaces/handler-consume-data.interface";
 import { HandlerAdditionalArgumentInterface } from "../interfaces/handler-additional-argument.interface";
-import { getEventHandlerDeliveryIndexesMetadata } from "../../decorators/event-handler-delivery.decorator";
+import { getEventHandlerDeliveryIndexesMetadata } from "../../decorators/./event-delivery.decorator";
 import { EventDeliveryContext } from "../../context/event-delivery.context";
 
 export class EventDeliveryHandlerAdditionalArgument

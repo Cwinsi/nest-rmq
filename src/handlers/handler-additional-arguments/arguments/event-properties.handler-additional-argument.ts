@@ -1,6 +1,6 @@
 import { HandlerConsumeDataInterface } from "../../interfaces/handler-consume-data.interface";
 import { HandlerAdditionalArgumentInterface } from "../interfaces/handler-additional-argument.interface";
-import { getEventHandlerPropertiesIndexesMetadata } from "../../decorators/event-handler-properties.decorator";
+import { getEventHandlerPropertiesIndexesMetadata } from "../../decorators/event-properties.decorator";
 import { plainObjectToInstanceUtil } from "../../../utils/plain-object-to-instance.util";
 import { EventPropertiesContext } from "../../context/event-properties.context";
 

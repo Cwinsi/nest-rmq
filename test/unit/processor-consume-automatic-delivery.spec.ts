@@ -1,6 +1,6 @@
 import "jest-extended";
 import { Event } from "../../src/events/decorators/event.decorator";
-import { EventHandler } from "../../src/handlers/decorators/event-handler.decorator";
+import { EventProcessor } from "../../src/handlers/decorators/event-processor.decorator";
 import { Injectable } from "@nestjs/common";
 
 import { getBasicModule } from "./utils/basic-module-setup.util";
@@ -10,7 +10,7 @@ jest.mock("amqplib", () => ({
   connect: jest.fn(),
 }));
 
-describe("HandlerConsumeAutomaticDelivery", () => {
+describe("Handler consume automatic delivery", () => {
   let { mockChannel } = getMockChannelAndConnection();
 
   beforeEach(async () => {
@@ -27,7 +27,7 @@ describe("HandlerConsumeAutomaticDelivery", () => {
 
     @Injectable()
     class TestHandler {
-      @EventHandler(TestEvent)
+      @EventProcessor(TestEvent)
       manualHandleEvent(event: TestEvent) {
         eventHandlerLogicMock(event);
       }
@@ -58,7 +58,7 @@ describe("HandlerConsumeAutomaticDelivery", () => {
 
     @Injectable()
     class TestHandler {
-      @EventHandler(TestEvent)
+      @EventProcessor(TestEvent)
       manualHandleEvent(_: TestEvent) {
         throw new Error("Supper painful error ;(");
       }

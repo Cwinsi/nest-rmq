@@ -1,6 +1,6 @@
 import "jest-extended";
 import { Event } from "../../src/events/decorators/event.decorator";
-import { EventHandler } from "../../src/handlers/decorators/event-handler.decorator";
+import { EventProcessor } from "../../src/handlers/decorators/event-processor.decorator";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Injectable } from "@nestjs/common";
 import { NestRmqModule } from "../../src/nest-rmq.module";
@@ -8,7 +8,7 @@ import { faker } from "@faker-js/faker";
 import { HandlerEventQueueNameStrategy } from "../../src/handlers/interfaces/handler-event-queue-name-strategy.interface";
 import { EventsExchangeStrategy } from "../../src/events/interfaces/events-exchange-strategy.interface";
 import { NestRmqConnectionOptions } from "../../src/configs/interfaces/nest-rmq-connection-options.interface";
-import { EventDelivery } from "../../src/handlers/decorators/event-handler-delivery.decorator";
+import { EventDelivery } from "../../src/handlers/decorators/./event-delivery.decorator";
 import { EventDeliveryContext } from "../../src/handlers/context/event-delivery.context";
 import { getMockChannelAndConnection } from "./utils/amqplib-mock-channel.util";
 
@@ -24,17 +24,17 @@ class TestEvent2 {}
 
 @Injectable()
 class TestHandler {
-  @EventHandler(TestEvent)
+  @EventProcessor(TestEvent)
   handleEvent(_event: TestEvent, @EventDelivery() _: EventDeliveryContext) {}
 
-  @EventHandler(TestEvent2)
+  @EventProcessor(TestEvent2)
   handleEvent2(_event: TestEvent2) {}
 
-  @EventHandler(TestEvent2)
+  @EventProcessor(TestEvent2)
   handleEvent3(_event: TestEvent2) {}
 }
 
-describe("AssertHandlers", () => {
+describe("Assert processor handlers", () => {
   let moduleRef: TestingModule;
 
   const mockEventQueueNameStrategy: HandlerEventQueueNameStrategy = {

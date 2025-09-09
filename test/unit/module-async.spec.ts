@@ -26,7 +26,7 @@ class FactoryConfigProvider {
 })
 class FactoryConfigModule {}
 
-describe("AsyncRootModule", () => {
+describe("Async root module init", () => {
   let moduleRef: TestingModule;
 
   getMockChannelAndConnection();

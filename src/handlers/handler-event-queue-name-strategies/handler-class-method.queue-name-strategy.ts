@@ -9,6 +9,6 @@ export class HandlerClassMethodQueueNameStrategy
     handlerMetadata: HandlerMetadata,
     eventMetadata: EventMetadata,
   ): string {
-    return `${eventMetadata.name}_${handlerMetadata.methodName}_${handlerMetadata.className}`;
+    return `${eventMetadata.name}_${handlerMetadata.type}_${handlerMetadata.methodName}_${handlerMetadata.className}`;
   }
 }

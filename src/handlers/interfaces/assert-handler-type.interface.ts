@@ -1,5 +1,6 @@
 import { HandlerExplorerMethodInterface } from "../../handler-explorer/interfaces/handler-explorer-method.interface";
 import { ChannelWrapper } from "amqp-connection-manager";
+import { HandlerType } from "../enums/handler-type.enum";
 
 export interface AssertHandlerTypeInterface {
   /**
@@ -11,4 +12,6 @@ export interface AssertHandlerTypeInterface {
     channelWrapper: ChannelWrapper,
     handler: HandlerExplorerMethodInterface,
   ): Promise<string>;
+
+  getHandlerType(): HandlerType;
 }

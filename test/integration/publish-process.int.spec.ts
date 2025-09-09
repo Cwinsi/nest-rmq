@@ -2,7 +2,7 @@ import { GenericContainer } from "testcontainers";
 import { Test } from "@nestjs/testing";
 import {
   Event,
-  EventHandler,
+  EventProcessor,
   EventProducer,
   InjectEventProducer,
   NestRmqModule,
@@ -52,7 +52,7 @@ describe("test", () => {
         await this.testEventEventProducer.publish(new TestEvent("Pedro"));
       }
 
-      @EventHandler(TestEvent)
+      @EventProcessor(TestEvent)
       manualHandleEvent(event: TestEvent) {
         eventHandlerLogicMock(event);
       }

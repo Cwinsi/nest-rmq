@@ -1,20 +1,24 @@
 import { Event } from "../../src/events/decorators/event.decorator";
-import { EventHandler } from "../../src/handlers/decorators/event-handler.decorator";
+import { EventProcessor } from "../../src/handlers/decorators/event-processor.decorator";
 import { HandlerExplorerService } from "../../src/handler-explorer/services/handler-explorer.service";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Injectable } from "@nestjs/common";
 import { HandlerExplorerModule } from "../../src/handler-explorer/handler-explorer.module";
+import { EventSubscription } from "../../src/handlers/decorators/event-subscription.decorator";
 
 @Event("test")
 class TestEvent {}
 
 @Injectable()
 class TestHandler {
-  @EventHandler(TestEvent)
-  handleEvents(_event: TestEvent) {}
+  @EventProcessor(TestEvent)
+  handleProcessorEvents(_event: TestEvent) {}
+
+  @EventSubscription(TestEvent)
+  handleSubscriptionEvents(_event: TestEvent) {}
 }
 
-describe("HandlerExplorer", () => {
+describe("Handler explorer register", () => {
   let moduleRef: TestingModule;
   let explorer: HandlerExplorerService;
 
@@ -33,15 +37,20 @@ describe("HandlerExplorer", () => {
     expect(explorer).toBeDefined();
   });
 
-  it("should find handler", () => {
+  it("should find handlers", () => {
     const handlers = explorer.getEventHandlerMethods();
 
     expect(handlers).toBeDefined();
-    expect(handlers).toHaveLength(1);
+    expect(handlers).toHaveLength(2);
 
-    const handler = handlers[0];
+    const [processor, subscription] = handlers;
 
-    expect(handler).toBeDefined();
-    expect(handler!.method).toBe(TestHandler.prototype.handleEvents);
+    expect(processor).toBeDefined();
+    expect(processor!.method).toBe(TestHandler.prototype.handleProcessorEvents);
+
+    expect(subscription).toBeDefined();
+    expect(subscription!.method).toBe(
+      TestHandler.prototype.handleSubscriptionEvents,
+    );
   });
 });

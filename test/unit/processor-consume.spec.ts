@@ -1,6 +1,6 @@
 import "jest-extended";
 import { Event } from "../../src/events/decorators/event.decorator";
-import { EventHandler } from "../../src/handlers/decorators/event-handler.decorator";
+import { EventProcessor } from "../../src/handlers/decorators/event-processor.decorator";
 import { Injectable } from "@nestjs/common";
 
 import { getBasicModule } from "./utils/basic-module-setup.util";
@@ -10,7 +10,7 @@ jest.mock("amqplib", () => ({
   connect: jest.fn(),
 }));
 
-describe("HandlerConsume", () => {
+describe("Processor consume", () => {
   let { mockChannel } = getMockChannelAndConnection();
 
   beforeEach(async () => {
@@ -27,7 +27,7 @@ describe("HandlerConsume", () => {
 
     @Injectable()
     class TestHandler {
-      @EventHandler(TestEvent)
+      @EventProcessor(TestEvent)
       manualHandleEvent(event: TestEvent) {
         eventHandlerLogicMock(event);
       }
@@ -66,7 +66,7 @@ describe("HandlerConsume", () => {
 
       thisMethod: any;
 
-      @EventHandler(TestEvent)
+      @EventProcessor(TestEvent)
       manualHandleEvent(_: TestEvent) {
         this.thisMethod();
       }

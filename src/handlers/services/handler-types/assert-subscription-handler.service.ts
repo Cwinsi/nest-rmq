@@ -7,7 +7,7 @@ import { Channel } from "amqplib";
 import { HandlerType } from "../../enums/handler-type.enum";
 
 @Injectable()
-export class AssertProcessorHandlerService
+export class AssertSubscriptionHandlerService
   implements AssertHandlerTypeInterface
 {
   constructor(private readonly configsService: ConfigsService) {}
@@ -25,6 +25,7 @@ export class AssertProcessorHandlerService
         config,
       );
 
+    const handlerQueueNameWithInstance = `${handlerQueueName}${this.configsService.getConfigs().instanceId}`;
     const handlerConfig = this.configsService.getHandlerConfigs(
       handler.handlerMetadata.options,
     );
@@ -38,21 +39,22 @@ export class AssertProcessorHandlerService
       );
 
     await channelWrapper.addSetup(async (channel: Channel) => {
-      await channel.assertQueue(handlerQueueName, {
+      await channel.assertQueue(handlerQueueNameWithInstance, {
         durable: handlerConfig.durable,
+        exclusive: true,
       });
 
       await channel.bindQueue(
-        handlerQueueName,
+        handlerQueueNameWithInstance,
         eventExchange,
         handler.eventMetadata.name,
       );
     });
 
-    return handlerQueueName;
+    return handlerQueueNameWithInstance;
   }
 
   getHandlerType(): HandlerType {
-    return HandlerType.PROCESSOR;
+    return HandlerType.SUBSCRIPTION;
   }
 }
