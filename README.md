@@ -58,9 +58,7 @@ import { NestRmqModule } from '@cwinsi/nest-rmq'
     NestRmqModule.forRootAsync({
       useFactory: async (config: RmqConfig) => ({
         connectionOption: {
-          hostname: config.password,
-          username: config.username,
-          password: config.password,
+          url: config.url,
         },
       }),
       inject: [RmqConfig],
