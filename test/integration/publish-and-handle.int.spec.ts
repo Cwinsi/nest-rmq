@@ -116,4 +116,61 @@ describe("Publish and handle", () => {
     await firstModuleRef.close();
     await secondModuleRef.close();
   });
+
+  it("Should publish and handle event once for every uniq processor", async () => {
+    const firstEventHandlerLogicMock = jest.fn();
+    const secondEventHandlerLogicMock = jest.fn();
+
+    @Event("test")
+    class TestEvent {
+      constructor(private readonly userName: string) {}
+    }
+
+    @Injectable()
+    class TestHandler {
+      constructor(
+        @InjectEventProducer(TestEvent)
+        private readonly testEventEventProducer: EventProducer<TestEvent>,
+      ) {}
+
+      async publishEvent() {
+        await this.testEventEventProducer.publish(new TestEvent("Pedro"));
+      }
+
+      @EventProcessor(TestEvent)
+      processEvent(event: TestEvent) {
+        firstEventHandlerLogicMock(event);
+      }
+
+      @EventProcessor(TestEvent)
+      processEvent2(event: TestEvent) {
+        secondEventHandlerLogicMock(event);
+      }
+    }
+
+    const firstModuleRef = await getBasicModule(
+      url,
+      [TestHandler],
+      [TestEvent],
+    );
+    const secondModuleRef = await getBasicModule(
+      url,
+      [TestHandler],
+      [TestEvent],
+    );
+
+    const firstHandler: TestHandler = await firstModuleRef.resolve(TestHandler);
+
+    expect(firstModuleRef).toBeDefined();
+    expect(secondModuleRef).toBeDefined();
+    expect(firstHandler).toBeDefined();
+
+    await firstHandler.publishEvent();
+
+    expect(firstEventHandlerLogicMock).toHaveBeenCalledTimes(1);
+    expect(secondEventHandlerLogicMock).toHaveBeenCalledTimes(1);
+
+    await firstModuleRef.close();
+    await secondModuleRef.close();
+  });
 });
