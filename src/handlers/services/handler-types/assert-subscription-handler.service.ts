@@ -25,7 +25,7 @@ export class AssertSubscriptionHandlerService
         config,
       );
 
-    const handlerQueueNameWithInstance = `${handlerQueueName}${this.configsService.getConfigs().instanceId}`;
+    const handlerQueueNameWithInstance = `${handlerQueueName}_${this.configsService.getConfigs().instanceId}`;
     const handlerConfig = this.configsService.getHandlerConfigs(
       handler.handlerMetadata.options,
     );
@@ -41,7 +41,7 @@ export class AssertSubscriptionHandlerService
     await channelWrapper.addSetup(async (channel: Channel) => {
       await channel.assertQueue(handlerQueueNameWithInstance, {
         durable: handlerConfig.durable,
-        exclusive: true,
+        autoDelete: true,
       });
 
       await channel.bindQueue(
